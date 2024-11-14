@@ -1,0 +1,7 @@
+{
+    "reviews_15m": "project_data/raw/bgg-15m-reviews.csv",
+    "reviews_19m": "project_data/raw/bgg-19m-reviews.csv",
+    "game_details": "project_data/raw/games_detailed_info.csv",
+    "game_id_20": "project_data/raw/2020-08-19.csv",
+    "game_id_22": "project_data/raw/2022-01-08.csv"
+}
