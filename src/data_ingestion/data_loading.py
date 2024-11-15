@@ -69,27 +69,3 @@ class DataLoader:
         """
         self._cache.clear()
         print("Data cache cleared.")
-
-"""
-Testing data
-"""
-data_loader = DataLoader("config.json")
-
-
-reviews_15m = data_loader.load_data("reviews_15m")
-reviews_19m = data_loader.load_data("reviews_19m")
-game_details = data_loader.load_data("game_details")
-game_id_20 = data_loader.load_data("game_id_20")
-game_id_22 = data_loader.load_data("game_id_22")
-
-
-if reviews_15m is not None and reviews_19m is not None:
-    all_reviews = pd.concat([reviews_15m, reviews_19m], ignore_index=True)
-    print(f"Total number of reviews: {len(all_reviews)}")
-
-
-if game_id_20 is not None and game_id_22 is not None:
-    all_games = pd.concat([game_id_20, game_id_22], ignore_index=True)
-    print(f"Total number of games in two years: {len(all_games)}")
-
-data_loader.clear_cache()
