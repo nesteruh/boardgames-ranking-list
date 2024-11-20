@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "./src/data_ingestion",
+        "./src/ranking",
+        "./src/visualization"
+    ]
+}

@@ -11,7 +11,13 @@ class DataCleaner:
 
     def __init__(self, save_path: str = "data/processed/"):
         self.save_path = save_path
-        os.makedirs(self.save_path, exist_ok=True)
+
+    def ensure_save_path(self):
+        """
+        Ensures the save path directory exists.
+        """
+        if not os.path.exists(self.save_path):
+            os.makedirs(self.save_path)
 
     def remove_duplicates(self, data: pd.DataFrame, subset: list = None):
         """
@@ -57,79 +63,3 @@ class DataCleaner:
         """Saves the cleaned DataFrame to the specified directory."""
         file_path = os.path.join(self.save_path, filename)
         data.to_csv(file_path, index=False)
-
-# Initialize DataLoader and DataCleaner
-data_loader = DataLoader("config.json")
-data_cleaner = DataCleaner(save_path="project_data/processed/")
-
-# Cleaning Script for Each Dataset
-
-## 1. 2022-01-08.csv and 2020-08-19.csv
-for dataset_name in ["game_id_20", "game_id_22"]:
-    data = data_loader.load_data(dataset_name)
-    if data is not None:
-        
-        # Remove redundant index column if it exists
-        data = data_cleaner.remove_redundant_columns(data, columns_to_drop=["Unnamed: 0"])
-
-        # Convert relevant columns to numeric
-        data = data_cleaner.convert_to_numeric(data, columns=["Year", "Rank", "Users rated"])
-
-        # Remove rows with low user ratings (e.g., below 30)
-        data = data_cleaner.remove_low_rated_rows(data, column="Users rated", min_threshold=30)
-
-        # Validate URLs
-        data = data_cleaner.validate_urls(data, url_columns=["URL", "Thumbnail"])
-
-        # Fill remaining missing values
-        data = data_cleaner.fill_missing_values(data, fill_value=0)
-
-        # Save cleaned dataset
-        data_cleaner.save_data(data, f"cleaned_{dataset_name}.csv")
-
-## 2. bgg-19m-reviews_forChatGPT.csv and bgg-15m-reviews_forChatGPT.csv
-for dataset_name in ["reviews_15m", "reviews_19m"]:
-    data = data_loader.load_data(dataset_name)
-    if data is not None:
-        
-        # Attempt to clean rows with inconsistent field counts (assumes initial inspection)
-        try:
-            data = pd.read_csv(data_loader.config[dataset_name], error_bad_lines=False)
-        except Exception as e:
-            print(f"Failed to load '{dataset_name}': {e}")
-
-        # Remove duplicates if any
-        data = data_cleaner.remove_duplicates(data, subset=["user", "ID", "rating"])
-
-        # Fill remaining missing values
-        data = data_cleaner.fill_missing_values(data, fill_value=0)
-
-        # Save cleaned dataset
-        data_cleaner.save_data(data, f"cleaned_{dataset_name}.csv")
-
-## 3. games_detailed_info.csv
-game_details = data_loader.load_data("game_details")
-if game_details is not None:
-    
-    # Drop columns with excessive NaN values, keeping important ones
-    columns_to_drop = [
-        "War Game Rank", "Children's Game Rank", "Accessory Rank",
-        "Video Game Rank", "Amiga Rank", "Commodore 64 Rank"
-    ]
-    game_details = data_cleaner.remove_redundant_columns(game_details, columns_to_drop)
-
-    # Normalize or drop nested/multi-value columns
-    if "alternate" in game_details.columns:
-        game_details = game_details.drop(columns=["alternate"])
-
-    # Remove rows with minimal user engagement
-    game_details = data_cleaner.remove_low_rated_rows(game_details, column="usersrated", min_threshold=50)
-
-    # Fill remaining missing values
-    game_details = data_cleaner.fill_missing_values(game_details, fill_value=0)
-
-    # Remove duplicates
-    game_details = data_cleaner.remove_duplicates(game_details, subset=["id"])
-
-    # Save cleaned dataset
-    data_cleaner.save_data(game_details, "cleaned_game_details.csv")

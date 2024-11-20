@@ -1,6 +1,5 @@
-import pandas as pd
 import json
-from typing import Optional, Dict
+import pandas as pd
 
 class DataLoader:
     """
@@ -8,43 +7,30 @@ class DataLoader:
     """
     def __init__(self, config_path: str = "config.json"):
         """
-        Initializes DataLoader with configuration from a JSON file.
-
-        Parameters:
-        config_path (str): Path to the JSON configuration file.
+        Initializes DataLoader with the path to the configuration file.
         """
-        self.config = self._load_config(config_path)
-        self._cache = {}  
+        self.config_path = config_path
+        self.config = None
+        self._cache = {}
 
-    def _load_config(self, config_path: str) -> Dict[str, str]:
+    def load_config(self):
         """
-        Loads the configuration from a JSON file.
-
-        Parameters:
-        config_path (str): Path to the JSON configuration file.
-
-        Returns:
-        Dict[str, str]: Configuration with paths to data files.
+        Loads the configuration.
         """
-        try:
-            with open(config_path, "r") as f:
-                config = json.load(f)
-            print("Configuration loaded successfully.")
-            return config
-        except Exception as e:
-            print(f"Error loading configuration: {e}")
-            return {}
+        if self.config is None:
+            try:
+                with open(self.config_path, "r") as f:
+                    self.config = json.load(f)
+                print("Configuration loaded successfully.")
+            except Exception as e:
+                print(f"Error loading configuration: {e}")
+                self.config = {}
 
-    def load_data(self, data_type: str) -> Optional[pd.DataFrame]:
+    def load_data(self, data_type: str):
         """
-        Loads data of the specified type (e.g., "reviews_15m", "game_details").
-
-        Parameters:
-        data_type (str): Type of data to load ("reviews_15m", "reviews_19m", "game_details", "game_id_20", "game_id_22").
-
-        Returns:
-        Optional[pd.DataFrame]: Loaded data if it exists in the configuration.
+        Loads data of the specified type after ensuring the config is loaded.
         """
+        self.load_config() 
         if data_type in self._cache:
             print(f"Using cached data for '{data_type}'")
             return self._cache[data_type]
@@ -56,16 +42,9 @@ class DataLoader:
 
         try:
             data = pd.read_csv(file_path, low_memory=False)
-            self._cache[data_type] = data  # Store in cache
+            self._cache[data_type] = data
             print(f"File {file_path} loaded successfully for '{data_type}'. Number of records: {len(data)}")
             return data
         except Exception as e:
             print(f"Error loading file {file_path}: {e}")
             return None
-
-    def clear_cache(self):
-        """
-        Clears cached data.
-        """
-        self._cache.clear()
-        print("Data cache cleared.")

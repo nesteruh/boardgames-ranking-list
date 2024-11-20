@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-
-
 class BoardGameRanker:
     def __init__(self, min_votes=50):
         """
@@ -19,7 +17,6 @@ class BoardGameRanker:
             "review_consistency": 0.1,
             "num_reviews": 0.05,
         }
-
     def calculate_score(self, row, global_mean, max_rank):
         """
         Calculate the advanced score based parameters and weights.
@@ -66,12 +63,11 @@ class BoardGameRanker:
         Returns:
         pd.DataFrame: The ranked DataFrame.
         """
-        # Aggregate review data
-        reviews_summary = reviews_data.groupby("ID").agg(
-            num_reviews=("rating", "count"),
-            avg_review_rating=("rating", "mean"),
-            review_variance=("rating", "var"),
-        ).reset_index()
+        reviews_summary = reviews_data.groupby("ID").agg({
+            "rating": ["count", "mean", "var"]
+        })
+        reviews_summary.columns = ["num_reviews", "avg_review_rating", "review_variance"]
+        reviews_summary = reviews_summary.reset_index()
 
         # Merge review data with game data
         game_data = pd.merge(game_data, reviews_summary, left_on="id", right_on="ID", how="left")
